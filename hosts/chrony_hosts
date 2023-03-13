@@ -1,16 +1,16 @@
 # field with <> must be rewritten to correct values
-[server]
+[ntp_server]
 # hostname ansible_host=<IP>
 chrony_server ansible_host=<IP>
 
 
-[client]
+[ntp_client]
 chrony_client ansible_host=<IP>
 
 
 [all:vars]
 # testing
-chrony_server_ip={{ hostvars[groups['server'][0]].ansible_host }}
+CHRONY_HOSTNAME={{ hostvars[groups['ntp_server'][0]].inventory_hostname }}
 local_network=<local network ip/subnet mask>
 
 # Other possible variables for paths eg. logdir = /var/log/yourfolder

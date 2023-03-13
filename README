@@ -1,6 +1,9 @@
-Ansible-playbook -i hosts/chrony_hosts playbooks/chrony_install.yml
+
+This playbook will install Chrony on the servers.
 
 Debian supported.
 
-Add ssh keys to the remote servers, where Chrony will be installed.
-Fill hosts file and start installation. 
+Add ssh keys for remote_user to the remote servers, where Chrony will be installed.
+Fill hosts file and start installation.
+
+To install only new clients, start playbook with limit to only ntp_client host group or limit to specific hosts.

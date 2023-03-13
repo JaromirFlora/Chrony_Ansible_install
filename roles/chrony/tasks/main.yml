@@ -1,4 +1,6 @@
 ---
+# tag fetch_ntp_keys is used for copy the keys from ntp_server to Ansible server, so it can be copied on clients then
+# run this playbook only once on ntp_server
 - name: Install packages for Chrony
   apt:
     name: "{{ packages }}"
@@ -7,35 +9,43 @@
       - chrony
 
 - name: Upload configuration template to Chrony server
-  when: inventory_hostname in groups['server']
+  when: inventory_hostname in groups['ntp_server']
   template:
     src=templates/chrony_server.conf
     dest=/etc/chrony/chrony.conf
     mode=0644
 
 - name: Upload configuration template to Chrony clients
-  when: inventory_hostname in groups['client']
+  when: inventory_hostname in groups['ntp_client']
   template:
     src=templates/chrony_client.conf
     dest=/etc/chrony/chrony.conf
     mode=0644
+
+- name: Wait before start ntp synchronization
+  # without the pause, the next tasks fails
+  pause:
+    seconds: 30
 
 - name: Enable ntp synchronization
   shell:
     cmd: timedatectl set-ntp yes
 
 - name: Create chrony keys on server
-  when: inventory_hostname in groups['server']
+  when: inventory_hostname in groups['ntp_server']
+  run_once: yes
   shell:
     cmd: chronyc keygen 1 SHA256 256 >> /etc/chrony/chrony.keys
 
 - name: Fetch keys file from chrony server
-  when: inventory_hostname in groups['server']
+  when: inventory_hostname in groups['ntp_server']
   run_once: yes
   fetch: src={{ keyfile | default('/etc/chrony/chrony.keys') }} dest=buffer/ flat=yes
+  tags:
+    - fetch_ntp_keys
 
 - name: Copy chrony keys file from buffer to clients
-  when: inventory_hostname in groups['client']
+  when: inventory_hostname in groups['ntp_client']
   copy: src=buffer/chrony.keys dest={{ keyfile | default('/etc/chrony/') }}
 
 - name: Start and enable chrony service
@@ -45,3 +55,4 @@
     enabled: yes
 
 #TODO - name: Check if time is synchronized and Chrony is working
+

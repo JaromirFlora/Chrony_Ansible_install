@@ -1,7 +1,7 @@
 ---
 - name: Install Chrony on the servers
   hosts: all
-  remote_user: ansible
+  remote_user: <REMOTE_USER>
   become: yes
   roles:
-    - ../roles/chrony_install
+    - chrony
